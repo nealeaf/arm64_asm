@@ -1,0 +1,42 @@
+代码：
+.data
+msg:
+.byte 'H','e','l','l','o',' '
+.byte 'W','o','r','l','d'
+.byte 0x0A
+
+.text
+.globl _start
+_start:
+  mov x2, #12 //length of the string
+  adr x1, msg //address of the string
+  mov x0, #1  //write to stdout
+  mov x8, #64 //sys_write opcode
+  svc #0
+
+解释:
+.data 段用于定义程序运行时需要使用的数据
+msg 是一个字符串数据，定义了要输出的内容："Hello World"
+.byte 0x0A：表示换行符（ASCII 码为 10，即十六进制的 0x0A）
+整个字符串的内容是 "Hello World\n"，其中 \n 是换行符
+.text 段用于定义程序的指令代码
+.globl _start：声明 _start 是一个全局符号，表示程序的入口点。
+_start：程序的入口标签，从这里开始执行代码。
+
+指令解析：
+mov x2, #12
+将立即数 12 移动到寄存器 x2 中。
+x2 用于存储要输出的字符串长度。这里的长度是 12，对应字符串 "Hello World\n" 的字符数（包括换行符）。
+adr x1, msg
+将 msg 的地址加载到寄存器 x1 中。
+adr 指令用于将地址加载到寄存器。x1 用于存储要输出的字符串的地址。
+mov x0, #1
+将立即数 1 移动到寄存器 x0 中。
+x0 用于指定文件描述符，1 表示标准输出（stdout）。
+mov x8, #64
+将立即数 64 移动到寄存器 x8 中。
+x8 用于存储系统调用编号。64 是 sys_write 系统调用的编号。
+svc #0
+执行系统调用指令。
+svc 是 ARM64 汇编中的软件中断指令，用于触发系统调用。
+当执行这条指令时，操作系统会根据 x8 中的系统调用编号（64）来执行 sys_write 系统调用。
