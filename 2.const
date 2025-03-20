@@ -1,0 +1,54 @@
+.global main                                             // 1 
+.align 2                                                 // 2 
+                                                        // 3 
+.section .rodata                                         // 4 
+rotypo: .asciz "Rypo"          // Meant this to be "Typo" // 5 
+fmt:    .asciz "%s\n"          // Used to print the strings // 6 
+                                                        // 7 
+.data                                                     // 8 
+rwtypo: .asciz "Rypo"          // Meant this to be "Typo" // 9 
+                                                        // 10 
+.text                                                     // 11 
+                                                        // 12 
+main:   str         x30, [sp, -16]!                     // 13 
+        // Try to fix rwtypo --- this will work         // 14 
+        ldr         x1, =rwtypo                         // 15 
+        mov         w2, 'T'                             // 16 
+        strb        w2, [x1]                            // 17 
+        ldr         x0, =fmt        // Notice I already loaded rwtypo // 18 
+        bl          printf                                  // 19 
+                                                        // 20 
+        // Try to fix rotypo --- this will end in tears // 21 
+        ldr         x1, =rotypo                         // 22 
+        mov         w2, 'T'                             // 23 
+        strb        w2, [x1]                            // 24 
+        ldr         x0, =fmt        // Notice I already loaded rotypo // 25 
+        bl          printf                                  // 26 
+                                                        // 27 
+        ldr         x30, [sp], 16                       // 28 
+        mov         w0, wzr                              // 29 
+        ret                                               // 30 
+                                                        // 31 
+.end                                                      // 32 
+
+解释：
+程序尝试将 rwtypo 中的字符串 "Rypo" 修改为 "Typo"，这是允许的，因为它位于可读写的数据段中。
+汇编代码如下：
+  ldr x1, =rwtypo          // 将 rwtypo 的地址加载到 x1
+  mov w2, 'T'              // 将字符 'T' 放入 w2
+  strb w2, [x1]            // 将 'T' 写入 rwtypo 的第一个字节
+
+程序尝试将 rotypo 中的字符串 "Rypo" 修改为 "Typo"，这是不允许的，因为它位于只读数据段中。
+汇编代码如下：
+  ldr x1, =rotypo          // 将 rotypo 的地址加载到 x1
+  mov w2, 'T'              // 将字符 'T' 放入 w2
+  strb w2, [x1]            // 尝试将 'T' 写入 rotypo 的第一个字节
+  由于 rotypo 是只读的，硬件会阻止这种写操作，导致程序崩溃（段错误，Segmentation fault）。
+
+运行程序后，输出如下：
+const > ./a.out
+Typo
+Segmentation fault (core dumped)
+const >
+第一次尝试修改 rwtypo 成功，输出 "Typo"。
+第二次尝试修改 rotypo 失败，导致段错误。
